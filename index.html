@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Task Manager</title>
+    <style>
+/* CSS Variables for Theming */
+:root {
+    --bg-color: #f0f2f5;
+    --text-color: #333;
+    --card-bg: #ffffff;
+    --border-color: #ddd;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #4CAF50; /* Updated to greenish */
+    --danger-color: #dc3545;
+    --warning-color: #FFA000; /* Updated to amberish */
+    --info-color: #17a2b8;
+}
+
+.light-theme {
+    --bg-color: #ffffff;
+    --text-color: #333;
+    --card-bg: #ffffff;
+    --border-color: #ddd;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --primary-color: #007bff;
+}
+
+.dark-theme {
+    --bg-color: #222;
+    --text-color: #fff;
+    --card-bg: #333;
+    --border-color: #444;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --primary-color: #0d6efd;
+}
+
+/* Global Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Navigation Bar */
+.navbar {
+    width: 100%;
+    padding: 10px 20px;
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    background-color: var(--card-bg);
+}
+.navbar-brand {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+.navbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.nav-item:hover {
+    color: var(--primary-color);
+}
+.nav-icon {
+    font-size: 16px;
+}
+.settings-button {
+    background-color: var(--success-color);
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s ease;
+}
+.settings-button:hover {
+    background-color: #3e8e41;
+}
+
+/* Page Sections */
+.page-section {
+    display: none;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.page-section.active {
+    display: block;
+}
+
+/* Sign Up Section */
+.signup-container, 
+.login-container,
+.activity-container,
+.settings-container {
+    max-width: 700px;
+    margin: 20px auto;
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+input, select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+}
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+button:hover {
+    background-color: #0056b3;
+}
+.error-message {
+    color: var(--danger-color);
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+}
+
+/* Activity Section */
+.activity-container {
+    margin-top: 80px;
+}
+
+/* Button Group Styles */
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.button-group button {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#add-activity {
+    background-color: var(--success-color);
+    color: white;
+}
+
+#add-activity:hover {
+    background-color: #3e8e41;
+    transform: translateY(-1px);
+}
+
+#clear-activities {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+#clear-activities:hover {
+    background-color: #e69100;
+    transform: translateY(-1px);
+}
+
+#download-json {
+    background-color: #009688;
+    color: white;
+    display: inline-block !important;
+}
+
+#download-json:hover {
+    background-color: #00796B;
+    transform: translateY(-1px);
+}
+
+/* Settings Section */
+.settings-container {
+    margin-top: 80px;
+    max-width: 400px;
+}
+
+.theme-option {
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-block;
+    margin: 5px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+.theme-option.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Chart and Feedback Styles */
+.chart-container {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.chart {
+    width: 45%;
+    min-width: 300px;
+    text-align: center;
+    margin: 10px 0;
+}
+
+.leisure-indicator {
+    padding: 10px;
+    margin: 15px 0;
+    border-radius: 5px;
+    text-align: center;
+    background-color: var(--card-bg);
+    transition: all 0.3s ease;
+}
+
+.leisure-indicator.red {
+    background-color: #ffdddd;
+    color: #d32f2f;
+}
+
+.leisure-indicator.green {
+    background-color: #ddffdd;
+    color: #388e3c;
+}
+
+.feedback-message {
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 5px;
+    background-color: var(--card-bg);
+    transition: all 0.3s ease;
+}
+
+.feedback-message.balanced {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.feedback-message.underloaded {
+    background-color: #fff8e1;
+    color: #ffa000;
+}
+
+.feedback-message.overloaded {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+.clear-button {
+    background-color: var(--danger-color);
+    color: white;
+    margin: 5px;
+}
+
+.clear-button:hover {
+    background-color: #d32f2f;
+}
+
+.delete-button {
+    background-color: var(--danger-color);
+    color: white;
+    margin-left: 10px;
+    padding: 2px 8px;
+    font-size: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-button:hover {
+    background-color: #c62828;
+}
+
+#logout {
+    padding: 8px 12px;
+    font-size: 14px;
+    margin-left: 20px;
+    height: auto;
+    width: auto;
+    white-space: nowrap;
+}
+
+/* Activity List */
+#activity-list, #goal-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#activity-list li, #goal-list li {
+    padding: 10px;
+    margin: 5px 0;
+    background-color: var(--card-bg);
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+/* Progress Bar */
+.progress-bar {
+    height: 20px;
+    background-color: var(--primary-color);
+    margin: 10px 0;
+    border-radius: 5px;
+    transition: width 0.5s;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .button-group button {
+        width: 100%;
+    }
+    
+    .chart {
+        width: 100%;
+    }
+    
+    .navbar-nav {
+        gap: 10px;
+    }
+}
+    </style>
+
+</head>
+<body class="default-theme">
+    <!-- Navigation Bar -->
+    <div class="navbar" id="main-navbar">
+        <div class="navbar-brand">SmartTime Mng</div>
+        <div class="navbar-nav">
+            <a class="nav-item" data-route="activity">
+                <i class="fas fa-chart-pie nav-icon"></i>
+                Activity
+            </a>
+            <a class="nav-item" data-route="settings">
+                <i class="fas fa-cog nav-icon"></i>
+                Settings
+            </a>
+        </div>
+        <button id="logout" class="settings-button">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </button>
+    </div>
+
+    <!-- Sign Up Section -->
+    <div class="page-section" id="signup-section">
+        <div class="signup-container">
+            <h2>Sign Up</h2>
+            <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <input type="text" id="fullName" placeholder="Enter your full name">
+                <div class="error-message" id="fullName-error"></div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Enter your email">
+                <div class="error-message" id="email-error"></div>
+            </div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Choose a username">
+                <div class="error-message" id="username-error"></div>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Choose a password">
+                <div class="error-message" id="password-error"></div>
+            </div>
+            <button id="signup-next">Next</button>
+            <p>Already have an account? <a href="#" data-route="login">Log in here</a></p>
+        </div>
+    </div>
+
+    <!-- Login Section -->
+    <div class="page-section" id="login-section">
+        <div class="login-container">
+            <h2>Login</h2>
+            <div class="form-group">
+                <label for="login-username">Username</label>
+                <input type="text" id="login-username" placeholder="Enter your username">
+                <div class="error-message" id="login-username-error"></div>
+            </div>
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" placeholder="Enter your password">
+                <div class="error-message" id="login-password-error"></div>
+            </div>
+            <button id="login-button">Login</button>
+            <p>Don't have an account? <a href="#" data-route="signup">Sign up here</a></p>
+        </div>
+    </div>
+
+    <!-- Activity Section -->
+    <div class="page-section" id="activity-section">
+        <div class="activity-container">
+            <h1>Activity Tracker</h1>
+   
+            <!-- Step 1: Input Form -->
+            <div id="input-form">
+                <h2>Enter Your Activities</h2>
+                <label for="activity-name">Activity Name:</label>
+                <input type="text" id="activity-name" placeholder="e.g., Reading, Gaming" required>
+               
+                <label for="activity-category">Category:</label>
+                <select id="activity-category" required>
+                    <option value="work">Work</option>
+                    <option value="leisure">Leisure</option>
+                    <option value="exercise">Exercise</option>
+                    <option value="social">Social Interaction</option>
+                    <option value="personal-care">Personal Care</option>
+                    <option value="errands">Errands</option>
+                    <option value="sleep">Sleep</option>
+                </select>
+               
+                <label for="activity-time">Time Spent (hours):</label>
+                <input type="number" id="activity-time" placeholder="Time in hours" min="0" max="24" required>
+               
+                <label for="activity-priority">Priority:</label>
+                <select id="activity-priority" required>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+
+                <label for="activity-deadline">Deadline (optional):</label>
+                <input type="datetime-local" id="activity-deadline">
+
+                <div class="button-group">
+                    <button id="add-activity">Add Activity</button>
+                    <button id="clear-activities">Clear/Restart</button>
+                    <button id="download-json">Download JSON</button>
+                </div>
+
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <!-- Step 2: Display List of Activities -->
+            <h3>Your Activities:</h3>
+            <ul id="activity-list"></ul>
+
+            <!-- Step 3: Upload JSON File -->
+            <h3>Upload Your Activity JSON:</h3>
+            <input type="file" id="upload-json" accept=".json">
+
+            <!-- Step 4: Optimised Time Plan Form -->
+            <div id="time-plan" style="display: none;">
+                <h3>Optimised Time Plan</h3>
+                <div id="optimized-plan"></div>
+                <div id="feedback-message" class="feedback-message"></div>
+                <div class="chart-container">
+                    <div class="chart">
+                        <canvas id="originalPlanChart"></canvas>
+                        <p>Original Plan</p>
+                    </div>
+                    <div class="chart">
+                        <canvas id="optimizedPlanChart"></canvas>
+                        <p>Optimised Plan</p>
+                    </div>
+                </div>
+                <button id="back-button">Back</button>
+                <button id="download-plan">Download Optimised Plan</button>
+            </div>
+
+            <!-- Visual Indicator for Leisure Time -->
+            <div id="leisure-indicator" class="leisure-indicator"></div>
+
+            <!-- Goal Setting Form -->
+            <div class="goal-form">
+                <h3>Set Your Goals</h3>
+                <label for="goal-name">Goal Name:</label>
+                <input type="text" id="goal-name" placeholder="e.g., Finish Project">
+               
+                <label for="goal-deadline">Deadline:</label>
+                <input type="datetime-local" id="goal-deadline">
+               
+                <button id="add-goal">Add Goal</button>
+            </div>
+
+            <!-- Display Goals -->
+            <h3>Your Goals:</h3>
+            <ul id="goal-list"></ul>
+
+            <!-- Clear All Button -->
+            <button id="clear-all" class="clear-button">Clear All Data</button>
+        </div>
+    </div>
+
+    <!-- Settings Section -->
+    <div class="page-section" id="settings-section">
+        <div class="settings-container">
+            <h2>Settings</h2>
+            <div class="form-group">
+                <label>Theme</label>
+                <div>
+                    <div class="theme-option" onclick="changeTheme('light')">Light</div>
+                    <div class="theme-option" onclick="changeTheme('dark')">Dark</div>
+                    <div class="theme-option active" onclick="changeTheme('default')">Default</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+// ======================
+// Application State
+// ======================
+let currentUser = null;
+let activities = [];
+let goals = [];
+let originalChart = null;
+let optimizedChart = null;
+let users = JSON.parse(localStorage.getItem('users')) || [];
+
+// ======================
+// Encryption Functions
+// ======================
+function getDynamicShiftValue(username) {
+    if (!username) return 5;
+    return username.length % 10 + 1; // Shift between 1-10
+}
+
+function dynamicCaesarEncrypt(text, username) {
+    if (!text) return '';
+    const shift = getDynamicShiftValue(username);
+    let result = "";
+    
+    for (let i = 0; i < text.length; i++) {
+        let char = text[i];
+        // Encrypt letters
+        if (char.match(/[a-z]/i)) {
+            const code = text.charCodeAt(i);
+            const base = code >= 97 ? 97 : 65;
+            char = String.fromCharCode(((code - base + shift) % 26) + base);
+        }
+        // Encrypt numbers
+        else if (char.match(/[0-9]/)) {
+            const code = text.charCodeAt(i);
+            char = String.fromCharCode(((code - 48 + shift) % 10) + 48);
+        }
+        // Keep special characters as-is
+        result += char;
+    }
+    return result;
+}
+
+function dynamicCaesarDecrypt(text, username) {
+    if (!text) return '';
+    const shift = getDynamicShiftValue(username);
+    let result = "";
+    
+    for (let i = 0; i < text.length; i++) {
+        let char = text[i];
+        // Decrypt letters
+        if (char.match(/[a-z]/i)) {
+            const code = text.charCodeAt(i);
+            const base = code >= 97 ? 97 : 65;
+            char = String.fromCharCode(((code - base - shift + 26) % 26) + base);
+        }
+        // Decrypt numbers
+        else if (char.match(/[0-9]/)) {
+            const code = text.charCodeAt(i);
+            char = String.fromCharCode(((code - 48 - shift + 10) % 10) + 48);
+        }
+        // Keep special characters as-is
+        result += char;
+    }
+    return result;
+}
+
+function encryptData(data, username) {
+    if (!data) return '';
+    const jsonStr = typeof data === 'string' ? data : JSON.stringify(data);
+    return dynamicCaesarEncrypt(jsonStr, username);
+}
+
+function decryptData(encryptedStr, username) {
+    if (!encryptedStr) return null;
+    try {
+        const decrypted = dynamicCaesarDecrypt(encryptedStr, username);
+        return JSON.parse(decrypted);
+    } catch (e) {
+        console.error("Decryption failed:", e);
+        return null;
+    }
+}
+
+function simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0; // Convert to 32bit integer
+    }
+    return hash.toString();
+}
+
+// ======================
+// DOM Ready
+// ======================
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialise theme
+    const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+    changeTheme(savedTheme);
+
+    // Check for authenticated user
+    checkAuth();
+
+    // Initialize routing
+    initRouting();
+
+    // Set up event listeners
+    setupEventListeners();
+
+    // Initialise application
+    initApplication();
+});
+
+// ======================
+// Theme Management
+// ======================
+function changeTheme(theme) {
+    // Remove all theme classes
+    document.body.classList.remove('light-theme', 'dark-theme', 'default-theme');
+    
+    // Add the selected theme class
+    document.body.classList.add(theme + '-theme');
+    
+    // Update active theme option visually
+    document.querySelectorAll('.theme-option').forEach(option => {
+        option.classList.remove('active');
+        if (option.getAttribute('onclick') === `changeTheme('${theme}')`) {
+            option.classList.add('active');
+        }
+    });
+    
+    // Save to localStorage
+    localStorage.setItem('selectedTheme', theme);
+    
+    // Update user preference if logged in
+    if (currentUser) {
+        const username = decryptData(currentUser.encryptedData)?.username;
+        if (username) {
+            currentUser.theme = theme;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            // Update in users array
+            const userIndex = users.findIndex(u => u.username === username);
+            if (userIndex !== -1) {
+                users[userIndex].theme = theme;
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+        }
+    }
+}
+
+function applySavedTheme() {
+    const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+    changeTheme(savedTheme);
+}
+
+// ======================
+// Routing System
+// ======================
+function initRouting() {
+    // Handle initial route
+    const initialRoute = window.location.hash.substring(1) || 'login';
+    navigateTo(initialRoute);
+
+    // Handle browser back/forward
+    window.addEventListener('popstate', function() {
+        const route = window.location.hash.substring(1) || 'login';
+        navigateTo(route);
+       
+        // Special handling for activity section
+        if (route === 'activity' && activities.length > 0) {
+            setTimeout(() => {
+                processTimeManagement();
+                generatePieCharts();
+            }, 100);
+        }
+    });
+
+    // Navigation links
+    document.querySelectorAll('[data-route]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const route = this.getAttribute('data-route');
+            navigateTo(route);
+        });
+    });
+}
+
+function navigateTo(route) {
+    console.log('Navigating to:', route);
+    
+    // Hide all sections
+    document.querySelectorAll('.page-section').forEach(section => {
+        section.classList.remove('active');
+    });
+
+    // Show requested section
+    const section = document.getElementById(`${route}-section`);
+    if (section) {
+        section.classList.add('active');
+    }
+
+    // Show/hide navbar based on authentication
+    const navbar = document.getElementById('main-navbar');
+    if (currentUser && (route === 'activity' || route === 'settings')) {
+        navbar.style.display = 'flex';
+    } else {
+        navbar.style.display = 'none';
+    }
+
+    // Update URL
+    if (route !== window.location.hash.substring(1)) {
+        history.pushState({}, '', `#${route}`);
+    }
+}
+
+// ======================
+// Authentication
+// ======================
+function checkAuth() {
+    const userData = localStorage.getItem('currentUser');
+    if (userData) {
+        currentUser = JSON.parse(userData);
+        // Decrypt user data to get username for theme
+        const decrypted = decryptData(currentUser.encryptedData, decryptData(currentUser.encryptedData)?.username);
+        if (decrypted?.theme) {
+            changeTheme(decrypted.theme);
+        }
+    }
+}
+
+// ======================
+// User Management
+// ======================
+function signup() {
+    const fullName = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    
+    // Clear previous errors
+    document.querySelectorAll('.error-message').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Validate fields
+    let isValid = true;
+    
+    if (!fullName) {
+        document.getElementById('fullName-error').textContent = 'Full name is required';
+        document.getElementById('fullName-error').style.display = 'block';
+        isValid = false;
+    }
+    
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+        document.getElementById('email-error').textContent = 'Valid email is required';
+        document.getElementById('email-error').style.display = 'block';
+        isValid = false;
+    }
+    
+    if (!username || username.length < 4) {
+        document.getElementById('username-error').textContent = 'Username must be at least 4 characters';
+        document.getElementById('username-error').style.display = 'block';
+        isValid = false;
+    }
+    
+    if (!password || password.length < 6) {
+        document.getElementById('password-error').textContent = 'Password must be at least 6 characters';
+        document.getElementById('password-error').style.display = 'block';
+        isValid = false;
+    }
+    
+    if (!isValid) return;
+    
+    // Check if username already exists
+    if (users.some(user => user.username === username)) {
+        document.getElementById('username-error').textContent = 'Username already exists';
+        document.getElementById('username-error').style.display = 'block';
+        return;
+    }
+    
+    // Create new user object with encrypted data
+    const newUser = {
+        username, // Only non-sensitive plain data (needed for login lookup)
+        encryptedData: encryptData({
+            fullName,
+            email,
+            passwordHash: simpleHash(password) // Store hash instead of plain password
+        }, username),
+        theme: 'default',
+        encryptedActivities: encryptData([], username),
+        encryptedGoals: encryptData([], username)
+    };
+    
+    // Add to users array
+    users.push(newUser);
+    localStorage.setItem('users', JSON.stringify(users));
+    
+    // Auto-login the new user (store encrypted)
+    currentUser = {
+        encryptedData: encryptData({
+            username,
+            fullName,
+            email,
+            theme: 'default'
+        }, username),
+        theme: 'default'
+    };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    
+    // Navigate to activity page
+    navigateTo('activity');
+}
+
+function login() {
+    const username = document.getElementById('login-username').value.trim();
+    const password = document.getElementById('login-password').value;
+    
+    // Clear previous errors
+    document.getElementById('login-username-error').style.display = 'none';
+    document.getElementById('login-password-error').style.display = 'none';
+
+    // Simple validation
+    if (!username) {
+        document.getElementById('login-username-error').textContent = 'Username is required';
+        document.getElementById('login-username-error').style.display = 'block';
+        return;
+    }
+    
+    if (!password) {
+        document.getElementById('login-password-error').textContent = 'Password is required';
+        document.getElementById('login-password-error').style.display = 'block';
+        return;
+    }
+
+    // Find user in database
+    const user = users.find(u => u.username === username);
+    
+    if (!user) {
+        document.getElementById('login-username-error').textContent = 'Username not found';
+        document.getElementById('login-username-error').style.display = 'block';
+        return;
+    }
+    
+    // Decrypt user data to verify password
+    const userData = decryptData(user.encryptedData, username);
+    
+    if (!userData || simpleHash(password) !== userData.passwordHash) {
+        document.getElementById('login-password-error').textContent = 'Incorrect password';
+        document.getElementById('login-password-error').style.display = 'block';
+        return;
+    }
+
+    // Set current user (store encrypted)
+    currentUser = {
+        encryptedData: encryptData({
+            username: userData.username,
+            fullName: userData.fullName,
+            email: userData.email,
+            theme: user.theme || 'default'
+        }, username),
+        theme: user.theme || 'default'
+    };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+    // Load user's activities and goals
+    loadUserData(currentUser);
+
+    // Navigate to activity page
+    navigateTo('activity');
+}
+
+function logout() {
+    currentUser = null;
+    activities = [];
+    goals = [];
+    localStorage.removeItem('currentUser');
+    navigateTo('login');
+}
+
+// ======================
+// Data Management
+// ======================
+function loadUserData(currentUser) {
+    if (!currentUser) return;
+
+    // Decrypt current user data to get username
+    const userData = decryptData(currentUser.encryptedData);
+    if (!userData) return;
+
+    const username = userData.username;
+
+    // Load activities
+    if (currentUser.encryptedActivities) {
+        const decrypted = decryptData(currentUser.encryptedActivities, username);
+        activities = Array.isArray(decrypted) ? decrypted : [];
+    }
+
+    // Load goals
+    if (currentUser.encryptedGoals) {
+        const decrypted = decryptData(currentUser.encryptedGoals, username);
+        goals = Array.isArray(decrypted) ? decrypted : [];
+    }
+
+    updateUI();
+}
+
+function saveUserData() {
+    if (!currentUser) return;
+
+    // Decrypt current user data to get username
+    const userData = decryptData(currentUser.encryptedData);
+    if (!userData) return;
+
+    const username = userData.username;
+
+    // Update current user with encrypted data
+    currentUser.encryptedActivities = encryptData(activities, username);
+    currentUser.encryptedGoals = encryptData(goals, username);
+    
+    // Save to localStorage
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+    // Update in users array
+    const userIndex = users.findIndex(u => u.username === username);
+    if (userIndex !== -1) {
+        users[userIndex] = {
+            ...users[userIndex],
+            encryptedActivities: currentUser.encryptedActivities,
+            encryptedGoals: currentUser.encryptedGoals,
+            theme: currentUser.theme
+        };
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+}
+
+// ======================
+// Activity Management
+// ======================
+function initApplication() {
+    applySavedTheme();
+    if (!currentUser) {
+        navigateTo('login');
+        return;
+    }
+
+    loadUserData(currentUser);
+    setInterval(updateCountdowns, 1000);
+}
+
+function addActivity() {
+    const activity = {
+        name: document.getElementById("activity-name").value,
+        category: document.getElementById("activity-category").value,
+        time: parseFloat(document.getElementById("activity-time").value),
+        priority: document.getElementById("activity-priority").value,
+        deadline: document.getElementById("activity-deadline").value || null
+    };
+
+    if (!activity.name || isNaN(activity.time) || activity.time <= 0 || activity.time > 24) {
+        alert("Please enter valid activity name and time (max 24 hours).");
+        return;
+    }
+
+    const totalTime = activities.reduce((sum, a) => sum + a.time, 0) + activity.time;
+    if (totalTime > 24) {
+        alert("Total time exceeds 24 hours. Please adjust your activities.");
+        return;
+    }
+
+    activities.push(activity);
+    saveUserData();
+    updateUI();
+}
+
+function updateUI() {
+    updateActivityList();
+    updateProgressBar();
+    updateLeisureIndicator();
+    document.getElementById("activity-name").value = "";
+    document.getElementById("activity-time").value = "";
+    document.getElementById("activity-deadline").value = "";
+    if (document.getElementById("download-json")) {
+        document.getElementById("download-json").style.display = "inline-block";
+    }
+}
+
+// ======================
+// Display Functions
+// ======================
+function updateActivityList() {
+    const activityList = document.getElementById("activity-list");
+    if (!activityList) return;
+
+    activityList.innerHTML = "";
+    activities.forEach(activity => {
+        const li = document.createElement("li");
+        li.textContent = `${activity.name} (${activity.category}, ${activity.priority} priority): ${activity.time} hours`;
+        if (activity.deadline) {
+            const countdown = document.createElement("span");
+            countdown.className = "countdown";
+            countdown.textContent = `Deadline: ${activity.deadline}`;
+            li.appendChild(countdown);
+        }
+        activityList.appendChild(li);
+    });
+}
+
+function updateProgressBar() {
+    const progressBar = document.getElementById("progress-bar");
+    if (!progressBar) return;
+
+    const totalTime = activities.reduce((sum, a) => sum + a.time, 0);
+    progressBar.style.width = `${(totalTime / 24) * 100}%`;
+}
+
+function updateLeisureIndicator() {
+    const indicator = document.getElementById("leisure-indicator");
+    if (!indicator) return;
+
+    const leisureTime = activities.filter(a => a.category === "leisure")
+                                .reduce((sum, a) => sum + a.time, 0);
+    if (leisureTime > 4) {
+        indicator.textContent = "You are spending too much time on leisure activities!";
+        indicator.className = "leisure-indicator red";
+    } else {
+        indicator.textContent = "Your leisure time is within an acceptable range.";
+        indicator.className = "leisure-indicator green";
+    }
+}
+
+// ======================
+// File Operations
+// ======================
+function downloadJSON() {
+    if (!currentUser) return;
+
+    // Decrypt current user data to get username
+    const userData = decryptData(currentUser.encryptedData);
+    if (!userData) return;
+
+    const username = userData.username;
+
+    const jsonData = {
+        encrypted: true,
+        version: "1.0",
+        data: {
+            activities: currentUser.encryptedActivities,
+            goals: currentUser.encryptedGoals
+        },
+        timestamp: new Date().toISOString()
+    };
+
+    downloadFile(jsonData, "activities.json");
+}
+
+
+function downloadOptimizedPlan() {
+    const optimizedPlanElement = document.getElementById("optimized-plan");
+    if (!optimizedPlanElement) return;
+
+    const timePlan = {
+        activities: activities,
+        optimizedPlan: optimizedPlanElement.textContent
+    };
+    downloadFile(timePlan, "optimized_time_plan.json");
+}
+
+function downloadFile(data, filename) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// ======================
+// Time Management
+// ======================
+function processTimeManagement() {
+    if (activities.length === 0) {
+        return;
+    }
+
+    const timePlan = optimizeTimeManagement();
+    displayTimePlan(timePlan);
+   
+    // Ensure charts are generated after the time plan is displayed
+    setTimeout(() => {
+        generatePieCharts();
+    }, 100);
+}
+
+function optimizeTimeManagement() {
+    const sleepTime = getCategoryTime("sleep");
+    const leisureTime = getCategoryTime("leisure");
+    const exerciseTime = getCategoryTime("exercise");
+    const personalCareTime = getCategoryTime("personal-care");
+    const errandsTime = getCategoryTime("errands");
+    const workTime = getCategoryTime("work");
+
+    let message = "";
+    let className = "balanced";
+
+    if (sleepTime < 6) {
+        message += "You are not getting enough sleep. Aim for at least 6 hours.\n";
+        className = "underloaded";
+    } else if (sleepTime > 9) {
+        message += "You are sleeping too much. Aim for a maximum of 9 hours.\n";
+        className = "overloaded";
+    }
+
+    if (exerciseTime < 0.5) {
+        message += "You are not spending enough time on exercise. Aim for at least 30 minutes.\n";
+        className = "underloaded";
+    } else if (exerciseTime > 2.5) {
+        message += "You are spending too much time on exercise. Aim for a maximum of 2.5 hours.\n";
+        className = "overloaded";
+    }
+
+    if (workTime > 12) {
+        message += "You are working too much. Aim for a maximum of 12 hours.\n";
+        className = "overloaded";
+    } else if (workTime < 8) {
+        message += "You are not spending enough time on work. Aim for at least 8 hours.\n";
+        className = "underloaded";
+    }
+
+    const feedback = `Sleep: ${sleepTime}h, Leisure: ${leisureTime}h, Exercise: ${exerciseTime}h, Work: ${workTime}h`;
+    return { message, feedback, className };
+}
+
+function getCategoryTime(category) {
+    return activities.filter(a => a.category === category)
+                    .reduce((sum, a) => sum + a.time, 0);
+}
+
+function displayTimePlan(timePlan) {
+    const inputForm = document.getElementById("input-form");
+    const timePlanElement = document.getElementById("time-plan");
+    const optimizedPlanElement = document.getElementById("optimized-plan");
+    const feedbackMessageElement = document.getElementById("feedback-message");
+
+    if (!inputForm || !timePlanElement || !optimizedPlanElement || !feedbackMessageElement) return;
+
+    inputForm.style.display = "none";
+    timePlanElement.style.display = "block";
+    optimizedPlanElement.textContent = timePlan.message;
+    feedbackMessageElement.textContent = timePlan.feedback;
+    feedbackMessageElement.className = `feedback-message ${timePlan.className}`;
+}
+
+// ======================
+// File Upload and Chart Generation Fix
+// ======================
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            if (!currentUser) throw new Error("Please log in first");
+            
+            // Decrypt current user data to get username
+            const userData = decryptData(currentUser.encryptedData);
+            if (!userData) throw new Error("User data corrupted");
+            
+            const username = userData.username;
+            const uploadedData = JSON.parse(e.target.result);
+
+            if (!uploadedData.encrypted) {
+                throw new Error("File is not encrypted - please upload a valid encrypted file");
+            }
+
+            // Decrypt activities
+            if (uploadedData.data?.activities) {
+                const decrypted = decryptData(uploadedData.data.activities, username);
+                activities = Array.isArray(decrypted) ? decrypted : [];
+            }
+
+            // Decrypt goals
+            if (uploadedData.data?.goals) {
+                const decrypted = decryptData(uploadedData.data.goals, username);
+                goals = Array.isArray(decrypted) ? decrypted : [];
+            }
+
+            saveUserData();
+            updateUI();
+            
+            // Clear existing charts before generating new ones
+            if (originalChart) {
+                originalChart.destroy();
+                originalChart = null;
+            }
+            if (optimizedChart) {
+                optimizedChart.destroy();
+                optimizedChart = null;
+            }
+            
+            // Process the uploaded data and generate charts
+            processTimeManagement();
+            generatePieCharts();
+
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+            console.error("File processing error:", error);
+        }
+    };
+    reader.readAsText(file);
+}
+
+// ======================
+// Chart Generation Fix
+// ======================
+
+function generatePieCharts() {
+    // Ensure we have activities to display
+    if (activities.length === 0) {
+        console.log("No activities to display");
+        return;
+    }
+
+    const categories = ["work", "leisure", "exercise", "social", "personal-care", "errands", "sleep"];
+    const originalData = categories.map(category => {
+        return activities.filter(activity => activity.category === category)
+                        .reduce((sum, activity) => sum + activity.time, 0);
+    });
+
+    const optimizedData = optimizeTimeDistribution(originalData, activities);
+
+    // Get chart containers
+    const originalCtx = document.getElementById('originalPlanChart')?.getContext('2d');
+    const optimizedCtx = document.getElementById('optimizedPlanChart')?.getContext('2d');
+
+    // Destroy existing charts if they exist
+    if (originalChart) originalChart.destroy();
+    if (optimizedChart) optimizedChart.destroy();
+
+    // Create new charts only if containers exist
+    if (originalCtx) {
+        originalChart = new Chart(originalCtx, {
+            type: 'pie',
+            data: {
+                labels: categories,
+                datasets: [{
+                    data: originalData,
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                        '#9966FF', '#FF9F40', '#C9CBCF'
+                    ],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw} hours`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    if (optimizedCtx) {
+        optimizedChart = new Chart(optimizedCtx, {
+            type: 'pie',
+            data: {
+                labels: categories,
+                datasets: [{
+                    data: optimizedData,
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                        '#9966FF', '#FF9F40', '#C9CBCF'
+                    ],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw} hours`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+// ======================
+// Time Distribution Optimization
+// ======================
+
+function optimizeTimeDistribution(originalData, activities) {
+    const optimizedData = [...originalData];
+    const categories = ["work", "leisure", "exercise", "social", "personal-care", "errands", "sleep"];
+    const targetTimes = {
+        "work": 8,
+        "leisure": 4,
+        "exercise": 1,
+        "social": 2,
+        "personal-care": 2,
+        "errands": 3,
+        "sleep": 7
+    };
+
+    // Calculate total time for validation
+    let totalTime = optimizedData.reduce((sum, time) => sum + time, 0);
+    if (totalTime === 0) return originalData; // Prevent division by zero
+
+    // Adjust time distribution based on priorities
+    categories.forEach((category, i) => {
+        const categoryActivities = activities.filter(a => a.category === category);
+        if (categoryActivities.length === 0) return;
+
+        const priorityWeights = {
+            high: 3,
+            medium: 2,
+            low: 1
+        };
+
+        const totalPriorityWeight = categoryActivities.reduce(
+            (sum, activity) => sum + (priorityWeights[activity.priority] || 1), 0
+        );
+
+        const priorityFactor = totalPriorityWeight / (categoryActivities.length * 3);
+        const targetTime = targetTimes[category] * priorityFactor;
+        const currentTime = optimizedData[i];
+
+        if (currentTime < targetTime) {
+            optimizedData[i] += (targetTime - currentTime) * 0.5; // Gradual adjustment
+        } else if (currentTime > targetTime) {
+            optimizedData[i] -= (currentTime - targetTime) * 0.5; // Gradual adjustment
+        }
+    });
+
+    // Normalize to 24 hours
+    totalTime = optimizedData.reduce((sum, time) => sum + time, 0);
+    const scaleFactor = 24 / totalTime;
+    return optimizedData.map(time => time * scaleFactor);
+}
+
+// ======================
+// Logout Function (Keeping it working)
+// ======================
+
+function logout() {
+    // Clear current user data
+    currentUser = null;
+    activities = [];
+    goals = [];
+    
+    // Clear charts if they exist
+    if (originalChart) {
+        originalChart.destroy();
+        originalChart = null;
+    }
+    if (optimizedChart) {
+        optimizedChart.destroy();
+        optimizedChart = null;
+    }
+    
+    // Remove user from localStorage
+    localStorage.removeItem('currentUser');
+    
+    // Navigate to login page
+    navigateTo('login');
+}
+
+function optimizeTimeDistribution(originalData, activities) {
+    const optimizedData = [...originalData];
+    const categories = ["work", "leisure", "exercise", "social", "personal-care", "errands", "sleep"];
+    const targetTimes = {
+        "work": 8,
+        "leisure": 4,
+        "exercise": 1,
+        "social": 2,
+        "personal-care": 2,
+        "errands": 3,
+        "sleep": 7
+    };
+
+    for (let i = 0; i < categories.length; i++) {
+        const category = categories[i];
+        const targetTime = targetTimes[category];
+        const currentTime = optimizedData[i];
+        const categoryActivities = activities.filter(activity => activity.category === category);
+
+        const priorityWeights = {
+            high: 3,
+            medium: 2,
+            low: 1
+        };
+        const totalPriorityWeight = categoryActivities.reduce((sum, activity) => sum + priorityWeights[activity.priority], 0);
+
+        if (totalPriorityWeight > 0) {
+            const priorityFactor = totalPriorityWeight / (categoryActivities.length * 3);
+            const adjustedTime = targetTime * priorityFactor;
+
+            if (currentTime < adjustedTime) {
+                const deficit = adjustedTime - currentTime;
+                optimizedData[i] += deficit;
+            } else if (currentTime > adjustedTime) {
+                const surplus = currentTime - adjustedTime;
+                optimizedData[i] -= surplus;
+            }
+        }
+    }
+
+    // Enforce sleep constraints
+    const sleepIndex = categories.indexOf("sleep");
+    if (sleepIndex !== -1) {
+        if (optimizedData[sleepIndex] < 6) {
+            optimizedData[sleepIndex] = 6;
+        } else if (optimizedData[sleepIndex] > 9) {
+            optimizedData[sleepIndex] = 9;
+        }
+    }
+
+    // Enforce exercise constraints
+    const exerciseIndex = categories.indexOf("exercise");
+    if (exerciseIndex !== -1) {
+        if (optimizedData[exerciseIndex] < 0.5) {
+            optimizedData[exerciseIndex] = 0.5;
+        } else if (optimizedData[exerciseIndex] > 3) {
+            optimizedData[exerciseIndex] = 3;
+        }
+    }
+
+    // Ensure total time is 24 hours
+    const totalTime = optimizedData.reduce((sum, time) => sum + time, 0);
+    if (totalTime > 24) {
+        const excess = totalTime - 24;
+        const maxIndex = optimizedData.indexOf(Math.max(...optimizedData));
+        if (maxIndex !== -1) {
+            optimizedData[maxIndex] -= excess;
+        }
+    } else if (totalTime < 24) {
+        const deficit = 24 - totalTime;
+        const minIndex = optimizedData.indexOf(Math.min(...optimizedData));
+        if (minIndex !== -1) {
+            optimizedData[minIndex] += deficit;
+        }
+    }
+
+    return optimizedData;
+}
+
+// ======================
+// Navigation Functions
+// ======================
+function goBack() {
+    const inputForm = document.getElementById("input-form");
+    const timePlanElement = document.getElementById("time-plan");
+   
+    if (inputForm) inputForm.style.display = "block";
+    if (timePlanElement) timePlanElement.style.display = "none";
+}
+
+// ======================
+// Goal Management
+// ======================
+function addGoal() {
+    const goalName = document.getElementById("goal-name")?.value;
+    const goalDeadline = document.getElementById("goal-deadline")?.value;
+
+    if (!goalName || !goalDeadline) {
+        alert("Please enter a goal name and deadline.");
+        return;
+    }
+
+    const goal = {
+        name: goalName,
+        deadline: goalDeadline
+    };
+
+    goals.push(goal);
+    saveUserData();
+    updateGoals();
+    clearGoalForm();
+}
+
+function updateGoals() {
+    const goalList = document.getElementById("goal-list");
+    if (!goalList) return;
+
+    goalList.innerHTML = "";
+    goals.forEach(goal => {
+        const li = document.createElement("li");
+        li.textContent = `${goal.name} (Deadline: ${goal.deadline})`;
+       
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.className = "delete-button";
+        deleteButton.addEventListener("click", () => deleteGoal(goal));
+       
+        li.appendChild(deleteButton);
+        goalList.appendChild(li);
+    });
+}
+
+function deleteGoal(goal) {
+    goals = goals.filter(g => g !== goal);
+    saveUserData();
+    updateGoals();
+}
+
+function clearGoalForm() {
+    const goalName = document.getElementById("goal-name");
+    const goalDeadline = document.getElementById("goal-deadline");
+   
+    if (goalName) goalName.value = "";
+    if (goalDeadline) goalDeadline.value = "";
+}
+
+// ======================
+// Data Management
+// ======================
+function clearActivities() {
+    if (confirm("Are you sure you want to clear all activities?")) {
+        activities = [];
+        saveUserData();
+        updateUI();
+    }
+}
+
+function clearAllData() {
+    if (confirm("Are you sure you want to clear ALL data (activities and goals)?")) {
+        activities = [];
+        goals = [];
+       
+        if (currentUser) {
+            currentUser.encryptedActivities = encryptData([], decryptData(currentUser.encryptedData)?.username);
+            currentUser.encryptedGoals = encryptData([], decryptData(currentUser.encryptedData)?.username);
+            localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        }
+
+        updateUI();
+        updateGoals();
+        const indicator = document.getElementById("leisure-indicator");
+        if (indicator) {
+            indicator.textContent = "";
+            indicator.className = "leisure-indicator";
+        }
+    }
+}
+
+// ======================
+// Countdown Timer
+// ======================
+function updateCountdowns() {
+    const now = new Date().getTime();
+
+    // Update activity deadlines
+    activities.forEach(activity => {
+        if (activity.deadline) {
+            try {
+                const deadline = new Date(activity.deadline).getTime();
+                if (deadline - now <= 0) {
+                    alert(`Deadline for "${activity.name}" has passed!`);
+                    activity.deadline = null;
+                    saveUserData();
+                    updateActivityList();
+                }
+            } catch (e) {
+                console.error("Invalid deadline format:", activity.deadline);
+            }
+        }
+    });
+
+    // Update goal deadlines
+    goals.forEach(goal => {
+        if (goal.deadline) {
+            try {
+                const deadline = new Date(goal.deadline).getTime();
+                if (deadline - now <= 0) {
+                    alert(`Deadline for "${goal.name}" has passed!`);
+                    goals = goals.filter(g => g !== goal);
+                    saveUserData();
+                    updateGoals();
+                }
+            } catch (e) {
+                console.error("Invalid deadline format:", goal.deadline);
+            }
+        }
+    });
+}
+
+// ======================
+// Event Listeners Setup
+// ======================
+function setupEventListeners() {
+    // Signup button
+    document.getElementById('signup-next')?.addEventListener('click', signup);
+
+    // Login button
+    document.getElementById('login-button')?.addEventListener('click', login);
+
+    // Logout button
+    document.getElementById('logout')?.addEventListener('click', logout);
+    
+    // Activity management
+    document.getElementById("add-activity")?.addEventListener("click", addActivity);
+    document.getElementById("download-json")?.addEventListener("click", downloadJSON);
+    document.getElementById("upload-json")?.addEventListener("change", handleFileUpload);
+    document.getElementById("download-plan")?.addEventListener("click", downloadOptimizedPlan);
+    document.getElementById("back-button")?.addEventListener("click", goBack);
+    document.getElementById("clear-activities")?.addEventListener("click", clearActivities);
+    document.getElementById("add-goal")?.addEventListener("click", addGoal);
+    document.getElementById("clear-all")?.addEventListener("click", clearAllData);
+}
+    </script>
+</body>
+</html>
