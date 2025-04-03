@@ -1,4 +1,4 @@
-# COMP1004
+# COMP1004 - SmartTime Management  
 SmartTime Management is a web application designed to help users optimize their daily schedules by analysing leisure activities and providing personalised recommendations. The application features a clean, intuitive interface that allows users to visualise their time distribution, manage tasks effectively, and receive reminders for a balanced approach to productivity and leisure.
 
 ## Key features
